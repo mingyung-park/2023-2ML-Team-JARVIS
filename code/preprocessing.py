@@ -1,72 +1,11 @@
-import pickle
+import pickle, json, os
 import numpy as np
 import pandas as pd
 from itertools import chain
 from sklearn.model_selection import train_test_split
-
-
-#####################################################
-SITE_CNT = 95
-URL_PER_SITE = 10
-CNT_PER_URL = 20
-
-# data 선택
-FT_UNMON = True
-FT_MON = True
-
-# label type - False 인 경우 monitored(1), unmonitored(-1)
-FT_MULTI_LABEL = True
+import commonUtils
 
 PACKET_SIZE = 512
-
-# analysis
-FT_ANALYSIS = True
-FT_ANALYSIS_SIZE = range(
-    10, 60, 10
-)  # 10부터 10씩 늘려감, 60보다 작을 때까지. -> (10, 20, 30, 40, 50)
-
-# feature 선택
-FT_SEQ_SIZE = 50
-# continuous
-FT_TIMESTAMPS = True
-
-FT_DIRECTION = True  # 방향만 표기 [1. -1, 1, 1, ...]
-FT_PACKET_SIZE = False  # packet의 size로 표기 [512, -512, 512, 512, ...]
-
-# busrt와 cumulative의 경우, Packet size를 반영하여 계산할 수도 있지만 Tor에서는 모든 패킷이 512 단위이므로, 그냥 scale을 줄여서 사용할 수도 있을거 같습니다.
-# (저희에게 주어진 데이터의 경우 모두 512이므로 그냥 방향만으로 계산한다고 생각해도 무방)
-FT_BURST_DIR = True  # [1, -1, 1, 2, ...]
-FT_BURST_SIZE = False  # burst_dir에 packet size를 반영한 것 (burst_dir * 512)
-FT_CUMULATIVE_DIR = True  # [1, 0, 1, 2, ...]
-FT_CUMULATIVE_SIZE = False  # cumulative dir에 packet size를 반영한 것 (cumulative_dir * 512)
-
-seqeunce_features_size = {
-    "timestamps": FT_SEQ_SIZE,
-    "direction": FT_SEQ_SIZE,
-    "packet_size": FT_SEQ_SIZE,
-    "burst_dir": FT_SEQ_SIZE,
-    "burst_size": FT_SEQ_SIZE,
-    "cumulative_dir": FT_SEQ_SIZE,
-    "cumulative_size": FT_SEQ_SIZE,
-}
-##########################################################
-
-
-def load_pickle_file(file_path):
-    """load pickle file
-
-    Args:
-        file_path (string): absolute path of pickle file
-
-    Returns:
-        list: data from pickle
-    """
-    print("Loading datafile...")
-    with open(file_path, "rb") as fi:
-        data = pickle.load(fi)
-
-    print("Done.")
-    return data
 
 
 def put_multi_label(mon_data, unmon_data):
@@ -82,28 +21,26 @@ def put_multi_label(mon_data, unmon_data):
     Returns:
         (list, list): dataset, label
     """
+    SITE_CNT = 95
+    URL_PER_SITE = 10
+
     print("parsing dataset...")
     dataset = []
     label = []
 
-    if mon_data:
-        if FT_MULTI_LABEL:
-            label = [i for i in range(95) for _ in range(200)]
-        else:
-            label = [1] * SITE_CNT * URL_PER_SITE * CNT_PER_URL
+    label = [i for i in range(95) for _ in range(200)]
 
-        for i in range(SITE_CNT):
-            temp = []
-            for j in range(URL_PER_SITE):
-                temp.append(mon_data[i * URL_PER_SITE + j])
-            dataset.append(list(chain.from_iterable(temp)))
+    for i in range(SITE_CNT):
+        temp = []
+        for j in range(URL_PER_SITE):
+            temp.append(mon_data[i * URL_PER_SITE + j])
+        dataset.append(list(chain.from_iterable(temp)))
 
-    if unmon_data:
-        label.extend([-1] * 10000)
-        dataset.append(unmon_data)
+    label.extend([-1] * 10000)
+    dataset.append(unmon_data)
 
     dataset = list(chain.from_iterable(dataset))
-    print("Done.")
+    print("Done.\n")
     return dataset, label
 
 
@@ -192,7 +129,7 @@ def analyze_direction(direction_arr, prefix):
     return df
 
 
-def extract_features(direction_arr, timestamps_arr):
+def extract_features(direction_arr, timestamps_arr, config):
     """extract features from original data
 
     - spreaded timestamp
@@ -213,66 +150,54 @@ def extract_features(direction_arr, timestamps_arr):
 
     columns = []
 
-    if FT_TIMESTAMPS:
+    if config["FT_TIMESTAMPS"]:
         columns.append(
-            unfold_array(
-                timestamps_arr, seqeunce_features_size["timestamps"], "timestamp"
-            )
+            unfold_array(timestamps_arr, config["FT_TIMESTAMPS"], "timestamp")
         )
         columns[0] = columns[0].drop(columns=["timestamp_0"])
 
-    if FT_DIRECTION:
-        columns.append(
-            unfold_array(
-                direction_arr, seqeunce_features_size["direction"], "direction"
-            )
-        )
+    if config["FT_DIRECTION"]:
+        columns.append(unfold_array(direction_arr, config["FT_DIRECTION"], "direction"))
 
-    if FT_PACKET_SIZE:
+    if config["FT_PACKET_SIZE"]:
         packet_size = list(map(lambda x: np.array(x) * PACKET_SIZE, direction_arr))
         columns.append(
-            unfold_array(
-                packet_size, seqeunce_features_size["packet_size"], "packet_size"
-            )
+            unfold_array(packet_size, config["FT_PACKET_SIZE"], "packet_size")
         )
 
-    if FT_BURST_DIR or FT_BURST_SIZE:
+    if config["FT_BURST_DIR"] or config["FT_BURST_SIZE"]:
         burst = list(map(calculate_burst_pattern, direction_arr))
-        if FT_BURST_DIR:
-            columns.append(
-                unfold_array(burst, seqeunce_features_size["burst_dir"], "burst_dir")
-            )
-        if FT_BURST_SIZE:
+        if config["FT_BURST_DIR"]:
+            columns.append(unfold_array(burst, config["FT_BURST_DIR"], "burst_dir"))
+        if config["FT_BURST_SIZE"]:
             burst = list(map(lambda x: np.array(x) * PACKET_SIZE, burst))
-            columns.append(
-                unfold_array(burst, seqeunce_features_size["burst_size"], "burst_size")
-            )
+            columns.append(unfold_array(burst, config["FT_BURST_SIZE"], "burst_size"))
 
-    if FT_CUMULATIVE_DIR or FT_CUMULATIVE_SIZE:
+    if config["FT_CUMULATIVE_DIR"] or config["FT_CUMULATIVE_SIZE"]:
         cumulative = list(map(lambda x: np.cumsum(x), direction_arr))
-        if FT_CUMULATIVE_DIR:
+        if config["FT_CUMULATIVE_DIR"]:
             columns.append(
                 unfold_array(
                     cumulative,
-                    seqeunce_features_size["cumulative_dir"],
+                    config["FT_CUMULATIVE_DIR"],
                     "cumulative_dir",
                 )
             )
-        if FT_CUMULATIVE_SIZE:
+        if config["FT_CUMULATIVE_SIZE"]:
             cumulative = list(map(lambda x: x * PACKET_SIZE, cumulative))
             columns.append(
                 unfold_array(
                     cumulative,
-                    seqeunce_features_size["cumulative_size"],
+                    config["FT_CUMULATIVE_SIZE"],
                     "cumulative_size",
                 )
             )
 
-    if FT_ANALYSIS:
+    if config["FT_ANALYSIS"]:
         df["count"] = list(map(lambda x: len(x), direction_arr))
         columns.append(analyze_direction(direction_arr, ""))
 
-        for i in FT_ANALYSIS_SIZE:
+        for i in config["FT_ANALYSIS_SIZE"]:
             columns.append(
                 analyze_direction(
                     list(map(lambda x: pad_zero_right(x, i), direction_arr)),
@@ -283,34 +208,15 @@ def extract_features(direction_arr, timestamps_arr):
     return pd.concat([df, *columns], axis=1)
 
 
-def save_dataset(data, file_path):
-    """save as pikle"""
-
-    with open(file_path, "wb") as f:
-        pickle.dump(data, f)
-
-    return
-
-
-def process_raw_data(monitored_path, unmonitored_path, save_data):
-    """data processing
-
+def parse_raw_data(monitored_path, unmonitored_path):
+    """
     Args:
         monitored_path (str): file path for monitored pkl file
         unmonitored_path (str): file path for unmonitored pkl file
-        save_data (bool): if False, return dataset which contains monitored and unmonitored data with multi label
 
-    Returns:
-        dataframe, dataframe: train_set, test_set
     """
-    if FT_MON:
-        mon_data = load_pickle_file(monitored_path)
-    else:
-        mon_data = None
-    if FT_UNMON:
-        unmon_data = load_pickle_file(unmonitored_path)
-    else:
-        unmon_data = None
+    mon_data = commonUtils.load_pickle_file(monitored_path)
+    unmon_data = commonUtils.load_pickle_file(unmonitored_path)
 
     dataset, label = put_multi_label(mon_data, unmon_data)
     del mon_data, unmon_data
@@ -324,41 +230,71 @@ def process_raw_data(monitored_path, unmonitored_path, save_data):
 
     del dataset
 
-    df = extract_features(direction, timestamps)
+    prefix = "./data/original"
+    if not (os.path.exists(prefix)):
+        os.makedirs(prefix)
+
+    commonUtils.save_pickle(timestamps, f"{prefix}/timestamps.pkl")
+    commonUtils.save_pickle(direction, f"{prefix}/directions.pkl")
+    commonUtils.save_pickle(label, f"{prefix}/label.pkl")
+
+    return
+
+
+def process_data(config_path, path_to_save=None):
+    """data processing
+
+    Args:
+        path_to_save (str)=None: path to save entire dataset. if None, don't save dataset
+
+    Returns:
+        dataframe, dataframe: train_set, test_set
+    """
+    with open(config_path) as f:
+        config = json.load(f)
+
+    try:
+        timestamps = commonUtils.load_pickle_file("./data/original/timestamps.pkl")
+        direction = commonUtils.load_pickle_file("./data/original/directions.pkl")
+        label = commonUtils.load_pickle_file("./data/original/label.pkl")
+    except:
+        FileNotFoundError("parse data first with preprocessing.parse_raw_data")
+
+    print("extracting features...")
+    df = extract_features(direction, timestamps, config)
+    print("Done.\n")
+
     del direction, timestamps
 
     df["label"] = label
 
-    if save_data:
-        save_dataset(df, "./data/dataset.pkl")
+    if path_to_save:
+        commonUtils.save_pickle(df, path_to_save)
+
     return df
 
 
-def split_dataset(df):
-    """
-    /data
-    ㄴ train
-        ㄴ closed_multi.pkl
-        ㄴ open_binary.pkl
-        ㄴ open_multi.pkl
-    ㄴ test
-        ㄴ closed_multi.pkl
-        ㄴ open_binary.pkl
-        ㄴ open_multi.pkl
+def filter_dataset(df=None, data_path=None, mode="OM", test_size=0.2, random_state=0):
+    if data_path != None:
+        df = commonUtils.load_pickle_file(data_path)
+    elif df.empty:
+        raise ValueError("data not given")
 
-        f"./data/train/closed_multi.pkl"
-    """
-    train_set, test_set = train_test_split(df, test_size=0.2, random_state=0)
+    data = None
 
-    prefix = "./data"
-    save_dataset(train_set, f"{prefix}/train/open_multi.pkl")
-    save_dataset(train_set[train_set["label"] >= 0], f"{prefix}/train/closed_multi.pkl")
-    train_set["label"] = train_set["label"].map(lambda x: 1 if x >= 0 else -1)
-    save_dataset(train_set, f"{prefix}/train/open_binary.pkl")
+    if mode == "OM":
+        data = df
+    elif mode == "CM":
+        data = df[df["label"] >= 0]
+    elif mode == "OB":
+        df["label"] = df["label"].map(lambda x: 1 if x >= 0 else -1)
+        data = df
+    else:
+        raise ValueError("mode should be one of 'OM', 'CM', or 'OB'")
 
-    save_dataset(test_set, f"{prefix}/test/open_multi.pkl")
-    save_dataset(test_set[test_set["label"] >= 0], f"{prefix}/test/closed_multi.pkl")
-    test_set["label"] = test_set["label"].map(lambda x: 1 if x >= 0 else -1)
-    save_dataset(test_set, f"{prefix}/test/open_binary.pkl")
-
-    return
+    return train_test_split(
+        data.drop(columns=["label"]),
+        data["label"],
+        test_size=test_size,
+        random_state=random_state,
+    )
