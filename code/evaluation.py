@@ -1,24 +1,26 @@
-import seaborn as sns
+# import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib import lines
 import numpy as np
-from sklearn.metrics import (
-    average_precision_score,
-    roc_curve,
-    precision_recall_curve,
-    auc,
-)
+
+# from sklearn.metrics import (
+#     average_precision_score,
+#     roc_curve,
+#     precision_recall_curve,
+#     auc,
+# )
 from sklearn.metrics import (
     ConfusionMatrixDisplay,
     accuracy_score,
     precision_score,
     recall_score,
     f1_score,
-    confusion_matrix,
-    roc_auc_score,
-    RocCurveDisplay,
+    # confusion_matrix,
+    # roc_auc_score,
+    # RocCurveDisplay,
 )
-from sklearn.preprocessing import LabelBinarizer
+
+# from sklearn.preprocessing import LabelBinarizer
 import warnings
 import commonUtils
 
@@ -58,7 +60,7 @@ def plot_metrics_comparison_multiclass(metrics_data, title):
 
         for j, metric_name in enumerate(metric_names):
             name, value = model_data["name"], model_data[metric_name]
-            print(f"\nModel Evaluation for {name} - {metric_name}: {value:.4f}")
+            print(f"Model Evaluation for {name} - {metric_name}: {value:.4f}")
 
             ax.bar(
                 positions[j],
