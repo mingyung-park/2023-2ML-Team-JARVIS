@@ -12,4 +12,9 @@
 
 open `tutorial.ipynb`
 
-- if you are using colaboratory, open notebook with Github
+### if you are using colaboratory,
+---
+1. open notebook with Github
+2. put url of current repository: `https://github.com/ZERO-black/2023-2ML-Team-JARVIS`
+3. select branch: `main`
+![image](https://github.com/ZERO-black/2023-2ML-Team-JARVIS/assets/78730403/6ea03a84-eb2a-4699-a733-1950898bdac6)
