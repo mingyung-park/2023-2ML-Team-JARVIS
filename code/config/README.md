@@ -31,11 +31,11 @@
   - 주어진 data 상에서 배열의 최소 길이는 50이지만, 만약 50보다 큰 값을 넣는 경우 모자란 길이만큼 뒤에 0으로 패딩처리 됨
   - 즉, [1, 2, 3, 4, 5, 6, ..., 50]을 다 넣는 경우 50번째 패킷까지 누적값을 계속 집계
 
-  > `count`: total number of packets
-  > `incoming_count`: total number of incoming packets
-  > `incoming_rate`: incoming_count / count
-  > `outgoing_count`: total number of outgoing packets
-  > `outgoing_rate`: outgoing_count / count
+  > `count`: total number of packets<br>
+  > `incoming_count`: total number of incoming packets<br>
+  > `incoming_rate`: incoming_count / count<br>
+  > `outgoing_count`: total number of outgoing packets<br>
+  > `outgoing_rate`: outgoing_count / count<br>
 
 - `FT_ANALYSIS_SIZE`: list
 
