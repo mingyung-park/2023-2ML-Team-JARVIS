@@ -112,7 +112,7 @@ def show_confusion_matrix(x, y, title, model=None, model_path=None, normalize=No
     plt.show()
 
 
-def compare_scores(names, datasets, models=None, model_paths=None):
+def compare_scores(names, datasets, title, models=None, model_paths=None):
     if model_paths:
         models = [commonUtils.load_pickle_file(x) for x in model_paths]
     elif models == None:
@@ -123,4 +123,4 @@ def compare_scores(names, datasets, models=None, model_paths=None):
     for model, name, dataset in zip(models, names, datasets):
         y_pred = model.predict(dataset[0])
         compare_data.append(compare_models(name, y_pred, dataset[1]))
-    plot_metrics_comparison_multiclass(compare_data, "tree")
+    plot_metrics_comparison_multiclass(compare_data, f"{title}")
