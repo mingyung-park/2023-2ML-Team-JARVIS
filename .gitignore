@@ -1,5 +1,8 @@
 .venv/
 
 data/
+result/
 
 **/__pycache__
+
+.DS_Store
