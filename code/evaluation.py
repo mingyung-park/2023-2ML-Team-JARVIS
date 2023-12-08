@@ -100,15 +100,15 @@ def plot_metrics_comparison_multiclass(metrics_data, title):
     plt.show()
 
 
-def show_confusion_matrix(x, y, model=None, model_path=None):
+def show_confusion_matrix(x, y, model=None, model_path=None, normalize=None, title):
     if model_path:
         model = commonUtils.load_pickle_file(model_path)
     elif model == None:
         raise ValueError("no model provided")
 
     fig, axes = plt.subplots(1, 1, figsize=(50, 50))
-    disp = ConfusionMatrixDisplay.from_estimator(model.model, x, y, ax=axes)
-    axes.set_title("Closed Multi SVM", fontsize=50)
+    disp = ConfusionMatrixDisplay.from_estimator(model.model, x, y, ax=axes, normalize=normalize)
+    axes.set_title(f"{title}", fontsize=50)
     plt.show()
 
 
