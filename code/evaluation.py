@@ -100,19 +100,19 @@ def plot_metrics_comparison_multiclass(metrics_data, title):
     plt.show()
 
 
-def show_confusion_matrix(x, y, model=None, model_path=None):
+def show_confusion_matrix(x, y, title, model=None, model_path=None, normalize=None):
     if model_path:
         model = commonUtils.load_pickle_file(model_path)
     elif model == None:
         raise ValueError("no model provided")
 
     fig, axes = plt.subplots(1, 1, figsize=(50, 50))
-    disp = ConfusionMatrixDisplay.from_estimator(model.model, x, y, ax=axes)
-    axes.set_title("Closed Multi SVM", fontsize=50)
+    disp = ConfusionMatrixDisplay.from_estimator(model.model, x, y, ax=axes, normalize=normalize)
+    axes.set_title(f"{title}", fontsize=50)
     plt.show()
 
 
-def compare_scores(names, datasets, models=None, model_paths=None):
+def compare_scores(names, datasets, title, models=None, model_paths=None):
     if model_paths:
         models = [commonUtils.load_pickle_file(x) for x in model_paths]
     elif models == None:
@@ -123,4 +123,4 @@ def compare_scores(names, datasets, models=None, model_paths=None):
     for model, name, dataset in zip(models, names, datasets):
         y_pred = model.predict(dataset[0])
         compare_data.append(compare_models(name, y_pred, dataset[1]))
-    plot_metrics_comparison_multiclass(compare_data, "tree")
+    plot_metrics_comparison_multiclass(compare_data, f"{title}")
