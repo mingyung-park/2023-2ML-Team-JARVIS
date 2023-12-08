@@ -47,16 +47,16 @@ def plot_metrics_comparison_multiclass(metrics_data, title):
     num_metrics = len(metrics_data[0]) - 1
     num_models = len(metrics_data)
 
-    fig, ax = plt.subplots(1, 1, figsize=(5 * num_models, 5))
+    fig, ax = plt.subplots(1, 1, figsize=(width*(1+num_metrics*(1+num_models)), 5))
     fig.suptitle(f"{title}", fontsize=16)
 
-    colors = plt.cm.viridis(np.linspace(0, 1, num_metrics))
+    colors = plt.cm.viridis(np.linspace(0, 1,  num_models+1))
 
     width = 0.5
     metric_names = list(metrics_data[0].keys())[1:]
 
     for i, model_data in enumerate(metrics_data):
-        positions = np.arange(num_metrics) + i * width
+        positions = width * (np.arange(num_metrics)*(1+num_models) + (i + 1))
 
         for j, metric_name in enumerate(metric_names):
             name, value = model_data["name"], model_data[metric_name]
@@ -76,10 +76,10 @@ def plot_metrics_comparison_multiclass(metrics_data, title):
                 f"{value:.4f}",
                 ha="center",
                 va="bottom",
-                fontsize=10,
+                fontsize=8,
             )
 
-    ax.set_xticks(positions - width / 2)
+    ax.set_xticks(positions - width*(num_models/2) / 2)
     ax.set_xticklabels(metric_names)
     ax.set_xlabel("Metrics")
     ax.set_ylim(0, 1)
