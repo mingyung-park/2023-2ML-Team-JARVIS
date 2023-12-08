@@ -9,7 +9,7 @@ class NaiveBayesModel(ModelClass):
 
     def __init__(self, prefix="") -> None:
         self.name = prefix + self.name
-        param_grid = {"var_smoothing": np.logspace(0, -9, num=100)}
+        param_grid = {"var_smoothing": np.logspace(0, -9, num=10)}
         self.model = GridSearchCV(
             GaussianNB(),
             param_grid,

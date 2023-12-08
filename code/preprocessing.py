@@ -208,7 +208,7 @@ def extract_features(direction_arr, timestamps_arr, config):
     return pd.concat([df, *columns], axis=1)
 
 
-def parse_raw_data(monitored_path, unmonitored_path):
+def parse_raw_data(monitored_path, unmonitored_path, dest="./data/original"):
     """
     Args:
         monitored_path (str): file path for monitored pkl file
@@ -230,13 +230,12 @@ def parse_raw_data(monitored_path, unmonitored_path):
 
     del dataset
 
-    prefix = "./data/original"
-    if not (os.path.exists(prefix)):
-        os.makedirs(prefix)
+    if not (os.path.exists(dest)):
+        os.makedirs(dest)
 
-    commonUtils.save_pickle(timestamps, f"{prefix}/timestamps.pkl")
-    commonUtils.save_pickle(direction, f"{prefix}/directions.pkl")
-    commonUtils.save_pickle(label, f"{prefix}/label.pkl")
+    commonUtils.save_pickle(timestamps, f"{dest}/timestamps.pkl")
+    commonUtils.save_pickle(direction, f"{dest}/directions.pkl")
+    commonUtils.save_pickle(label, f"{dest}/label.pkl")
 
     return
 
