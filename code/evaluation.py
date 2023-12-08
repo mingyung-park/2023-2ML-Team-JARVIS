@@ -100,7 +100,7 @@ def plot_metrics_comparison_multiclass(metrics_data, title):
     plt.show()
 
 
-def show_confusion_matrix(x, y, model=None, model_path=None, normalize=None, title):
+def show_confusion_matrix(x, y, title, model=None, model_path=None, normalize=None):
     if model_path:
         model = commonUtils.load_pickle_file(model_path)
     elif model == None:
