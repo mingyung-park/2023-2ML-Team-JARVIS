@@ -28,7 +28,7 @@ warnings.simplefilter(action="ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
 
 
-def compare_models(model_name, y_pred, y_true):
+def compare_models(model_name, y_true, y_pred):
     accuracy = accuracy_score(y_true, y_pred)
     precision = precision_score(y_true, y_pred, average="weighted")
     recall = recall_score(y_true, y_pred, average="weighted")
@@ -136,7 +136,7 @@ def compare_scores(
 
     for model, name, dataset in zip(models, names, datasets):
         y_pred = model.predict(dataset[0])
-        compare_data.append(compare_models(name, y_pred, dataset[1]))
+        compare_data.append(compare_models(name, dataset[1], y_pred))
     plot_metrics_comparison_multiclass(compare_data, f"{title}", save_fig_path)
 
 

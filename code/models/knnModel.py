@@ -34,3 +34,34 @@ class KNNModel(ModelClass):
         temp = super().fit(x, y)
         print(f"best param: {self.model.best_params_}")
         return temp
+
+
+class KNNwithSeq(ModelClass):
+    name = "KNN-SS-SEQ"
+
+    def __init__(self, prefix="") -> None:
+        self.name = prefix + self.name
+        param = {
+            "knn__n_neighbors": list(range(3, 7)),
+            "knn__weights": ["uniform", "distance"],
+            "knn__metric": ["euclidean", "manhattan", "minkowski"],
+        }
+
+        model = Pipeline(
+            [
+                ("ss", StandardScaler()),
+                ("knn", KNeighborsClassifier()),
+            ]
+        )
+        self.model = GridSearchCV(
+            model,
+            param,
+            refit=True,
+            verbose=1,
+            cv=5,
+        )
+
+    def fit(self, x, y):
+        temp = super().fit(x, y)
+        print(f"best param: {self.model.best_params_}")
+        return temp
