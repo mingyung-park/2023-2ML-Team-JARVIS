@@ -16,6 +16,7 @@ def train_analyze_model(model, data, model_save_path, save_fig_path=None):
         data[3],
         y_pred,
         model.name,
+        normalize="true",
         save_fig_path=save_fig_path,
     )
 
