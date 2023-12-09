@@ -63,7 +63,7 @@ def do_experiment(base_path, result_dir="../result/experiment5"):
         model = models.treeModel.SimpleRandomForest()
         model.fit(train_x, data[2])
         y_pred = model.predict(test_x)
-        result_list.append(evaluation.compare_models(f"{cnt}", y_pred, data[3]))
+        result_list.append(evaluation.compare_models(f"{cnt}", data[3], y_pred))
 
         train_x = train_x.drop(
             columns=[
