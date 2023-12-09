@@ -11,9 +11,9 @@ class KNNModel(ModelClass):
     def __init__(self, prefix="") -> None:
         self.name = prefix + self.name
         param = {
-            "knn__n_neighbors": list(range(5, 10)),
+            "knn__n_neighbors": list(range(3,7)),
             "knn__weights": ["uniform", "distance"],
-            "knn__metric": ["euclidean", "manhattan", "minkowski", "cosine"],
+            "knn__metric": ["euclidean", "manhattan", "minkowski"],
         }
 
         model = Pipeline(
