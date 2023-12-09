@@ -42,7 +42,7 @@ CONFIG_PATH = "code/config/experiment5.json"
 DATASET_PATH = "data/experiment5.pkl"
 
 
-def do_experiment(base_path, result_dir="../result/experiment5"):
+def seq_length_test(title, dataset, path):
     SIZE = 200
 
     accuracy = []
@@ -51,19 +51,13 @@ def do_experiment(base_path, result_dir="../result/experiment5"):
     f1 = []
 
     result_list = []
-
-    df = preprocessing.process_data(
-        config_path=f"{base_path}/{CONFIG_PATH}",
-        path_to_save=f"{base_path}/{DATASET_PATH}",
-    )
-    data = preprocessing.filter_dataset(df=df, mode="CM", test_size=0.25)
-    train_x, test_x = data[0], data[1]
+    train_x, test_x = dataset[0], dataset[1]
 
     for cnt in range(SIZE, 0, -1):
         model = models.treeModel.SimpleRandomForest()
-        model.fit(train_x, data[2])
+        model.fit(train_x, dataset[2])
         y_pred = model.predict(test_x)
-        result_list.append(evaluation.compare_models(f"{cnt}", data[3], y_pred))
+        result_list.append(evaluation.compare_models(f"{cnt}", dataset[3], y_pred))
 
         train_x = train_x.drop(
             columns=[
@@ -79,7 +73,7 @@ def do_experiment(base_path, result_dir="../result/experiment5"):
         )
 
     result_list.reverse()
-    with open(f"{result_dir}/result.json", "w") as f:
+    with open(f"{path}/result.json", "w") as f:
         f.write(
             json.dumps(
                 result_list,
@@ -100,6 +94,21 @@ def do_experiment(base_path, result_dir="../result/experiment5"):
     plt.plot(f1, label="f1")
     plt.xticks(range(0, SIZE + 1, 10))
 
-    plt.title("size of sequential data")
+    plt.title(title)
     plt.legend()
-    plt.savefig(f"{result_dir}/plot")
+    plt.savefig(f"{path}/plot")
+
+
+def do_experiment(base_path, result_dir="../result/experiment5"):
+    df = preprocessing.process_data(
+        config_path=f"{base_path}/{CONFIG_PATH}",
+        path_to_save=f"{base_path}/{DATASET_PATH}",
+    )
+
+    for mode in ["CM", "OM", "OB"]:
+        data = preprocessing.filter_dataset(df=df, mode=mode, test_size=0.25)
+        seq_length_test(
+            f"size of sequential data - {mode}",
+            data,
+            f"{base_path}/{result_dir}/{mode}",
+        )
