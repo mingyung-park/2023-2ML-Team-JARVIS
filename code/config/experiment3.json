@@ -1,0 +1,17 @@
+{
+    "FT_ANALYSIS": true,
+    "FT_ANALYSIS_SIZE": [
+        10,
+        20,
+        30,
+        40,
+        50
+    ],
+    "FT_TIMESTAMPS": 50,
+    "FT_DIRECTION": 50,
+    "FT_PACKET_SIZE": 0,
+    "FT_BURST_DIR": 50,
+    "FT_BURST_SIZE": 0,
+    "FT_CUMULATIVE_DIR": 50,
+    "FT_CUMULATIVE_SIZE": 0
+}

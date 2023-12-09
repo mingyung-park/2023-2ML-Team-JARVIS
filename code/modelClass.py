@@ -9,6 +9,7 @@ class ModelClass:
     def fit(self, x, y):
         """training code"""
         print(f"Training {self.name}")
+        print(f"data shape: {x.shape}")
         return self.model.fit(x, y)
 
     def predict(self, x):

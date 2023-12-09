@@ -240,7 +240,30 @@ def parse_raw_data(monitored_path, unmonitored_path, dest="./data/original"):
     return
 
 
-def process_data(config_path, path_to_save=None):
+def get_original_data():
+    try:
+        timestamps = commonUtils.load_pickle_file("./data/original/timestamps.pkl")
+        direction = commonUtils.load_pickle_file("./data/original/directions.pkl")
+        label = commonUtils.load_pickle_file("./data/original/label.pkl")
+    except:
+        FileNotFoundError("parse data first with preprocessing.parse_raw_data")
+
+    return direction, timestamps, label
+
+
+def combine_data(direction, timestamps, label, config):
+    print("extracting features...")
+    df = extract_features(direction, timestamps, config)
+    print("Done.\n")
+
+    del direction, timestamps
+
+    df["label"] = label
+
+    return df
+
+
+def process_data(config_path=None, config=None, path_to_save=None):
     """data processing
 
     Args:
@@ -249,23 +272,12 @@ def process_data(config_path, path_to_save=None):
     Returns:
         dataframe, dataframe: train_set, test_set
     """
-    with open(config_path) as f:
-        config = json.load(f)
+    if config_path:
+        with open(config_path) as f:
+            config = json.load(f)
 
-    try:
-        timestamps = commonUtils.load_pickle_file("./data/original/timestamps.pkl")
-        direction = commonUtils.load_pickle_file("./data/original/directions.pkl")
-        label = commonUtils.load_pickle_file("./data/original/label.pkl")
-    except:
-        FileNotFoundError("parse data first with preprocessing.parse_raw_data")
-
-    print("extracting features...")
-    df = extract_features(direction, timestamps, config)
-    print("Done.\n")
-
-    del direction, timestamps
-
-    df["label"] = label
+    direction, timestamps, label = get_original_data()
+    df = combine_data(direction, timestamps, label, config)
 
     if path_to_save:
         commonUtils.save_pickle(df, path_to_save)
