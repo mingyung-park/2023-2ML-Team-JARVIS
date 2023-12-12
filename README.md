@@ -70,7 +70,7 @@ you should place following raw dataset and set `RAW_DATA_DIRECTORY` in `tutorial
 
 open `tutorial.ipynb`
 
-### if you are using colaboratory,
+### using colaboratory,
 
 ---
 
